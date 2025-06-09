@@ -18,7 +18,7 @@ const EXAMPLE_PROMPTS = [
   "What emerging trends are appearing in TV mandates this month?",
   "Find me contacts for recent [genre] film mandates",
 ];
-const WEB_INFO = "web search information";
+
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, setInput } =

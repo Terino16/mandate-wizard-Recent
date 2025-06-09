@@ -1,4 +1,3 @@
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/general/Navbar";
 import Link from "next/link"
