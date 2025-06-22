@@ -1,109 +1,84 @@
-import { NextRequest } from "next/server";
-import OpenAI from "openai";
-import { streamText } from "ai";
-import { openai } from '@ai-sdk/openai';
+import { AssistantResponse } from 'ai';
+import OpenAI from 'openai';
 
-const client = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
+// Initialize the OpenAI client with your API key
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Your Assistant ID
 const ASSISTANT_ID = "asst_WaTcbILAYzz2NrStuFa5i3iU";
 
-// Function to remove source annotations from assistant response
+// Set the runtime to edge for best streaming performance
+export const runtime = 'edge';
+
+// Function to remove source annotations from the assistant's response
+// This function is preserved exactly as you provided it.
 function removeSourceAnnotations(text: string): string {
   // Remove patterns like 【35†source】, 【12:0†source】, etc.
   return text
     .replace(/【\d+:\d+†[^】]*】/g, '') // Remove 【12:0†source】 format
     .replace(/【\d+†[^】]*】/g, '')     // Remove 【35†source】 format
-    .replace(/\[\d+:\d+\]/g, '')      // Remove [12:0] format
-    .replace(/\[\d+\]/g, '')          // Remove [35] format
-    .replace(/\s+/g, ' ')             // Clean up extra spaces
-    .trim();                          // Remove leading/trailing spaces
+    .replace(/\[\d+:\d+\]/g, '')       // Remove [12:0] format
+    .replace(/\[\d+\]/g, '')           // Remove [35] format
+    .replace(/\s+/g, ' ')              // Clean up extra spaces
+    .trim();                           // Remove leading/trailing spaces
 }
 
-export async function POST(req: NextRequest) {
-  // Parse the request body ONCE at the beginning
-  const { messages } = await req.json();
-  
+export async function POST(req: Request) {
   try {
-    // Get the latest user message
-    const latestMessage = messages[messages.length - 1];
+    // Parse the request body to get the user's message and the current thread ID
+    const { threadId: currentThreadId, message } = await req.json();
 
-    // 1. Create a thread
-    const thread = await client.beta.threads.create();
+    // Create a new thread if one doesn't exist, otherwise use the existing one
+    const threadId = currentThreadId ?? (await openai.beta.threads.create({})).id;
 
-    // 2. Add the user message to the thread
-    await client.beta.threads.messages.create(thread.id, {
-      role: "user",
-      content: latestMessage.content,
+    // Add the user's message to the thread
+    const createdMessage = await openai.beta.threads.messages.create(threadId, {
+      role: 'user',
+      content: message,
     });
 
-    // 3. Create and poll the run with better error handling
-    const run = await client.beta.threads.runs.createAndPoll(thread.id, {
-      assistant_id: ASSISTANT_ID,
-    });
-
-    console.log(`Run completed with status: ${run.status}`);
-
-    if (run.status === 'completed') {
-      // Get the assistant's response
-      const threadMessages = await client.beta.threads.messages.list(thread.id);
-      const assistantMessage = threadMessages.data.find(
-        msg => msg.role === 'assistant'
-      );
-
-      if (assistantMessage && assistantMessage.content[0].type === 'text') {
-        let responseText = assistantMessage.content[0].text.value;
-        
-        // Remove source annotations from the response
-        responseText = removeSourceAnnotations(responseText);
-        
-        // console.log('Original response:', assistantMessage.content[0].text.value);
-        // console.log('Cleaned response:', responseText);
-        
-        // Stream the cleaned assistant's response
-        const result = streamText({
-          model: openai('gpt-4o'),
-          messages: [
-            {
-              role: 'assistant',
-              content: responseText,
-            },
-          ],
+    // Use AssistantResponse to handle the streaming interaction
+    return AssistantResponse(
+      {
+        threadId: threadId,
+        messageId: createdMessage.id,
+      },
+     // eslint-disable-next-line
+      async ({ forwardStream, sendDataMessage }) => {
+        // Create the run and begin streaming
+        const runStream = openai.beta.threads.runs.stream(threadId, {
+          assistant_id: ASSISTANT_ID,
         });
 
-        return result.toDataStreamResponse();
-      }
-    }
-
-    // Handle failed runs - get error details
-    if (run.status === 'failed') {
-      console.error('Assistant run failed:', {
-        runId: run.id,
-        lastError: run.last_error,
-        failedAt: run.failed_at
-      });
-      
-      // Log the last error if available
-      if (run.last_error) {
-        console.error('Failure details:', run.last_error);
-      }
-    }
-
-    // For any non-completed status, fall back to direct model
-    console.log(`Assistant run status: ${run.status}, falling back to direct model`);
-    
+        // This part is key: we're intercepting the stream to process text
+        // before forwarding it to the client.
+        await forwardStream(
+          runStream.on('textCreated', () => {
+              // This event is fired when the assistant starts generating text.
+              // We don't need to do anything here, but it's available.
+              console.log('Assistant has started generating text...');
+              // eslint-disable-next-line
+          }).on('textDelta', (delta, snapshot) => {
+              // This event gives us the small 'delta' of new text.
+              // We could apply cleaning here, but cleaning the full text is more reliable.
+          }).on('textDone', (text) => {
+              // This event fires when a complete text block is available.
+              // We clean the final text here before it's fully processed.
+              text.value = removeSourceAnnotations(text.value);
+              console.log('Cleaned final text block.');
+          })
+          // We can also handle other events like tool calls if needed
+          .on('toolCallCreated', (toolCall) => {
+              console.log(`Tool call created: ${toolCall.type}`);
+          })
+        );
+      },
+    );
   } catch (error) {
-    console.error('Error with assistant:', error);
+    console.error('An error occurred in the chat route:', error);
+    // Return a generic error response
+    return new Response('An internal server error occurred.', { status: 500 });
   }
-
-  // Fallback to direct model call (using already parsed messages)
-  console.log('Using fallback direct model call');
-  
-  const result = streamText({
-    model: openai('gpt-4o'),
-    messages,
-  });
-
-  return result.toDataStreamResponse();
 }
