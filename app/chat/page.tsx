@@ -54,7 +54,7 @@ const LoadingStages = ({ isVisible }: { isVisible: boolean }) => {
         }
         return prev; // Stay on "Finishing" if it takes longer
       });
-    }, 4000); // Changed to 3 seconds
+    }, 6000); // Changed to 3 seconds
 
     return () => clearInterval(interval);
   }, [isVisible]);
