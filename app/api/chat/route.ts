@@ -58,8 +58,8 @@ export async function POST(req: NextRequest) {
         // Remove source annotations from the response
         responseText = removeSourceAnnotations(responseText);
         
-        console.log('Original response:', assistantMessage.content[0].text.value);
-        console.log('Cleaned response:', responseText);
+        // console.log('Original response:', assistantMessage.content[0].text.value);
+        // console.log('Cleaned response:', responseText);
         
         // Stream the cleaned assistant's response
         const result = streamText({
