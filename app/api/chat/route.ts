@@ -7,13 +7,12 @@ const openai = new OpenAI({
 });
 
 // Your Assistant ID
-const ASSISTANT_ID = "asst_WaTcbILAYzz2NrStuFa5i3iU";
+const ASSISTANT_ID = "asst_6ymP338fK7XTrQUpgg6dKamj";
 
 // Set the runtime to edge for best streaming performance
 export const runtime = 'edge';
 
 // Function to remove source annotations from the assistant's response
-// This function is preserved exactly as you provided it.
 function removeSourceAnnotations(text: string): string {
   // Remove patterns like 【35†source】, 【12:0†source】, etc.
   return text
@@ -45,8 +44,7 @@ export async function POST(req: Request) {
         threadId: threadId,
         messageId: createdMessage.id,
       },
-     // eslint-disable-next-line
-      async ({ forwardStream, sendDataMessage }) => {
+      async ({ forwardStream }) => {
         // Create the run and begin streaming
         const runStream = openai.beta.threads.runs.stream(threadId, {
           assistant_id: ASSISTANT_ID,
@@ -57,7 +55,6 @@ export async function POST(req: Request) {
         await forwardStream(
           runStream.on('textCreated', () => {
               // This event is fired when the assistant starts generating text.
-              // We don't need to do anything here, but it's available.
               console.log('Assistant has started generating text...');
               // eslint-disable-next-line
           }).on('textDelta', (delta, snapshot) => {

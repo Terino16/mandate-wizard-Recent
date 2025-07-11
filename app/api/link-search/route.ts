@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { searchLink } from '@/lib/search/searchLink';
+import { searchLink2 } from '@/lib/search/searchLink';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         if (toolCall.function.name === "searchLink") {
           try {
             const args = JSON.parse(toolCall.function.arguments);
-            const searchResults = await searchLink(args.query);
+            const searchResults = await searchLink2(args.query);
             
             // Take the first/best result from each search
             if (searchResults && searchResults.length > 0) {
