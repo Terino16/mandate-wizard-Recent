@@ -38,7 +38,7 @@ export async function searchLink2(query: string) {
     });
     
     const data = await response.json();
-    
+    // eslint-disable-next-line
     return data.organic?.slice(0, 5).map((result: any) => ({
       title: result.title,
       link: result.link,

@@ -188,6 +188,7 @@ export default function Chat() {
 
   const [isChatStarted, setIsChatStarted] = useState(false);
   const [showLoadingStages, setShowLoadingStages] = useState(false);
+  // eslint-disable-next-line
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
