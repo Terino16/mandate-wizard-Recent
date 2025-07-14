@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader2, Check, Search, Brain, Sparkles, Plus } from "lucide-react";
+import { ArrowRight, Loader2, Plus, Search } from "lucide-react";
 import { useAssistant } from "@ai-sdk/react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,140 +40,18 @@ const getCurrentDate = () => {
   return now.toLocaleDateString("en-US", options);
 };
 
-// Enhanced Loading Stages with consistent purple theme
-const LoadingStages = ({ isVisible }: { isVisible: boolean }) => {
-  const [currentStage, setCurrentStage] = useState(-1);
-  const stages = [
-    { name: "Searching", icon: Search, color: "text-purple-400" },
-    { name: "Analysing", icon: Brain, color: "text-purple-500" },
-    { name: "Finishing", icon: Sparkles, color: "text-purple-600" }
-  ];
-
-  useEffect(() => {
-    if (!isVisible) {
-      setCurrentStage(-1);
-      return;
-    }
-
-    setCurrentStage(0);
-
-    const interval = setInterval(() => {
-      setCurrentStage((prev) => {
-        if (prev < stages.length - 1) {
-          return prev + 1;
-        }
-        return prev;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isVisible]);
-
-  if (!isVisible) return null;
-
-  return (
-    <div className="space-y-3 py-4">
-      {stages.map((stage, index) => {
-        const isCompletedStage = index < currentStage;
-        const isActiveStage = index === currentStage;
-        const isVisibleStage = index <= currentStage;
-        const IconComponent = stage.icon;
-
-        return (
-          <div
-            key={stage.name}
-            className={`flex items-center gap-3 transition-all duration-400 transform ${
-              isVisibleStage 
-                ? "opacity-100 translate-x-0" 
-                : "opacity-0 translate-x-2"
-            }`}
-            style={{
-              transitionDelay: `${index * 150}ms`,
-            }}
-          >
-            <div className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 ${
-              isCompletedStage 
-                ? "bg-purple-500 border-purple-500" 
-                : isActiveStage 
-                ? "border-purple-400 bg-purple-50 dark:bg-purple-900/20" 
-                : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/20"
-            }`}>
-              {isCompletedStage ? (
-                <Check className="h-4 w-4 text-white animate-in zoom-in duration-200" />
-              ) : isActiveStage ? (
-                <IconComponent className="h-4 w-4 text-purple-500 animate-pulse" />
-              ) : (
-                <IconComponent className="h-4 w-4 text-gray-400" />
-              )}
-              
-              {/* Smaller animated ring for active stage */}
-              {isActiveStage && (
-                <div className="absolute inset-0 rounded-full border-2 border-purple-400 animate-ping opacity-60" />
-              )}
-            </div>
-            
-            <div className="flex-1">
-              <span className={`text-sm font-medium transition-colors duration-300 ${
-                isCompletedStage
-                  ? "text-purple-600 dark:text-purple-400"
-                  : isActiveStage
-                  ? "text-purple-500 dark:text-purple-300"
-                  : "text-gray-500 dark:text-gray-400"
-              }`}>
-                {stage.name}...
-              </span>
-              
-              {/* Smaller progress bar */}
-              <div className="mt-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                <div 
-                  className={`h-1 rounded-full transition-all duration-1000 ${
-                    isCompletedStage 
-                      ? "w-full bg-purple-500" 
-                      : isActiveStage 
-                      ? "w-2/3 bg-purple-400 animate-pulse" 
-                      : "w-0 bg-gray-300"
-                  }`}
-                />
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-// Skeleton component with purple theme
-const MessageSkeleton = () => {
-  return (
-    <div className="space-y-3 animate-pulse">
-      <div className="flex items-center gap-2">
-        <div className="w-6 h-6 bg-purple-200 dark:bg-purple-800/40 rounded-full"></div>
-        <div className="w-8 h-3 bg-purple-200 dark:bg-purple-800/40 rounded"></div>
-      </div>
-      <div className="space-y-2">
-        <div className="w-full h-3 bg-purple-100 dark:bg-purple-900/30 rounded animate-shimmer"></div>
-        <div className="w-4/5 h-3 bg-purple-100 dark:bg-purple-900/30 rounded animate-shimmer"></div>
-        <div className="w-3/4 h-3 bg-purple-100 dark:bg-purple-900/30 rounded animate-shimmer"></div>
-        <div className="w-2/3 h-3 bg-purple-100 dark:bg-purple-900/30 rounded animate-shimmer"></div>
-      </div>
-    </div>
-  );
-};
-
-// Smaller typing indicator with purple theme
-const TypingIndicator = () => {
-  return (
-    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-      <div className="flex space-x-1">
-        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce"></div>
-        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-      </div>
-      <span className="text-sm">Finding related resources...</span>
-    </div>
-  );
-};
+// AI Loading Animation Component
+const AiLoadAnim = () => (
+  <div className="flex justify-center py-4">
+    <Image
+      src="/ai_loadanim2.gif"
+      alt="AI Loading Animation"
+      width={400}
+      height={400}
+      unoptimized={true} // Important for GIFs in Next.js
+    />
+  </div>
+);
 
 export default function Chat() {
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
@@ -192,6 +70,7 @@ export default function Chat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showRelatedResources, setShowRelatedResources] = useState(false);
 
   const performSearch = async (responseText: string) => {
     try {
@@ -227,6 +106,7 @@ export default function Chat() {
     setSearchResults([]);
     setIsSearching(false);
     setInput("");
+    setShowRelatedResources(false);
   };
 
   useEffect(() => {
@@ -264,6 +144,7 @@ export default function Chat() {
     setShowLoadingStages(true);
     setIsStreaming(false);
     setIsChatStarted(true);
+    setShowRelatedResources(false);
 
     const currentDate = getCurrentDate();
     const formattedMessage = `Date- ${currentDate} User Query - ${input}`;
@@ -278,6 +159,10 @@ export default function Chat() {
 
   const handlePromptClick = (prompt: string) => {
     setInput(prompt);
+  };
+
+  const handleShowRelatedResources = () => {
+    setShowRelatedResources(true);
   };
 
   return (
@@ -368,8 +253,28 @@ export default function Chat() {
                               <ReactMarkdown>{displayContent}</ReactMarkdown>
                             </div>
 
+                            {/* Show Related Resources Button - Only for last assistant message when response is complete and not loading */}
                             {m.role === "assistant" &&
                               index === messages.length - 1 &&
+                              !showRelatedResources &&
+                              !isLoading &&
+                              !isSearching &&
+                              searchResults.length > 0 && (
+                                <div className="mt-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                                  <Button
+                                    onClick={handleShowRelatedResources}
+                                    className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] flex items-center gap-2"
+                                  >
+                                    <Search className="h-4 w-4" />
+                                    Show Related Resources
+                                  </Button>
+                                </div>
+                              )}
+
+                            {/* Show Related Resources - Only when button is clicked */}
+                            {m.role === "assistant" &&
+                              index === messages.length - 1 &&
+                              showRelatedResources &&
                               searchResults.length > 0 && (
                                 <div className="mt-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-500">
                                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
@@ -392,18 +297,10 @@ export default function Chat() {
                                   </div>
                                 </div>
                               )}
-
-                            {m.role === "assistant" &&
-                              index === messages.length - 1 &&
-                              isSearching && (
-                                <div className="mt-4 animate-in fade-in-50 duration-300">
-                                  <TypingIndicator />
-                                </div>
-                              )}
                           </div>
                         ) : (
                           <div className="animate-in fade-in-50 duration-300">
-                            {status === "in_progress" ? <MessageSkeleton /> : ""}
+                            {status === "in_progress" ? <AiLoadAnim /> : ""}
                           </div>
                         )}
                       </div>
@@ -425,7 +322,7 @@ export default function Chat() {
                         AI
                       </span>
                     </div>
-                    <LoadingStages isVisible={showLoadingStages} />
+                    <AiLoadAnim />
                   </div>
                 )}
               </div>
@@ -472,7 +369,7 @@ export default function Chat() {
               <Button
                 type="button"
                 onClick={handleNewChat}
-                className="rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transform hover:scale-[1.02] transition-all duration-200 px-3"
+                className="rounded-xl bg-gray-100 dark:bg-gray-100 text-gray-900 dark:text-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 transform hover:scale-[1.02] transition-all duration-200 px-3"
                 title="Start New Chat"
               >
                 <Plus className="h-4 w-4" />
