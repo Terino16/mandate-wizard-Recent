@@ -70,12 +70,12 @@ export function SignupForm({
 
 
     startEmailTransition(async () => {
-      const { data, error } = await authClient.signUp.email({
+     await authClient.signUp.email({
         email, // user email address
         password, // user password -> min 8 characters by default
         name, // user display name
     }, {
-        onSuccess: (ctx) => {
+        onSuccess: () => {
           toast.success("Signed up successfully!")
           router.push("/")
         },

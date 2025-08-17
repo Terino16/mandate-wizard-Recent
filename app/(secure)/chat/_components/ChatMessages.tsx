@@ -13,7 +13,11 @@ interface SearchResult {
 }
 
 interface ChatMessagesProps {
-  messages: any[];
+  messages: {
+    id: string;
+    role: string;
+    content: string;
+  }[];
   isLoading: boolean;
   isSearching: boolean;
   searchResults: SearchResult[];

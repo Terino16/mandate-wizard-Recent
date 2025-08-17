@@ -18,7 +18,7 @@ import { authClient } from "@/lib/authclient";
 import { useRouter } from "next/navigation";
 
 
-export default function ClientNav({ credits, onCreditsUpdate }: { credits: number | undefined; onCreditsUpdate?: (newCredits: number) => void }) {
+export default function ClientNav({ credits,  }: { credits: number | undefined; onCreditsUpdate?: (newCredits: number) => void }) {
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();

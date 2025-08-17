@@ -15,7 +15,10 @@ interface SearchResult {
 }
 
 interface ChatMessageProps {
-  message: any;
+  message: {
+    role: string;
+    content: string;
+  };
   index: number;
   messagesLength: number;
   isLoading: boolean;

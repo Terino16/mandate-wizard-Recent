@@ -33,7 +33,7 @@ const getCurrentDate = () => {
 export function ChatClient({ credits, onCreditsUpdate }: { credits: number | undefined; onCreditsUpdate?: (newCredits: number) => void }) {
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
   
-  const { messages, input, handleInputChange, setInput, append, status, setMessages } =
+  const { messages, input, setInput, append, status, setMessages } =
     useAssistant({
       api: "/api/chat",
       threadId,
@@ -155,8 +155,8 @@ export function ChatClient({ credits, onCreditsUpdate }: { credits: number | und
       if (onCreditsUpdate && credits !== undefined) {
         onCreditsUpdate(credits - 1);
       }
-    } catch (error: any) {
-      if (error.message === 'Insufficient credits') {
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Insufficient credits') {
         toast.error("You don't have enough credits to send a message. Please purchase more credits.");
       } else {
         toast.error("Failed to send message. Please try again.");
