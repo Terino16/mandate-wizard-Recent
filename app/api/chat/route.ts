@@ -7,14 +7,14 @@ const openai = new OpenAI({
 });
 
 // Your Assistant ID
-const ASSISTANT_ID = "asst_6ymP338fK7XTrQUpgg6dKamj";
+const ASSISTANT_ID = "asst_76Cv3n3VMsRmi49pbJigj2Qn";
 
 // Set the runtime to edge for best streaming performance
 export const runtime = 'edge';
 
 // Function to remove source annotations from the assistant's response
 function removeSourceAnnotations(text: string): string {
-  // Remove patterns like 【35†source】, 【12:0†source】, etc.
+
   return text
     .replace(/【\d+:\d+†[^】]*】/g, '') // Remove 【12:0†source】 format
     .replace(/【\d+†[^】]*】/g, '')     // Remove 【35†source】 format
@@ -26,47 +26,55 @@ function removeSourceAnnotations(text: string): string {
 
 export async function POST(req: Request) {
   try {
-    // Parse the request body to get the user's message and the current thread ID
     const { threadId: currentThreadId, message } = await req.json();
 
-    // Create a new thread if one doesn't exist, otherwise use the existing one
+    // Deduct credits before processing the message
+    const deductResponse = await fetch(`${req.headers.get('origin')}/api/chat/deduct-credits`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': req.headers.get('cookie') || '',
+      },
+    });
+
+    if (!deductResponse.ok) {
+      const errorData = await deductResponse.json();
+      if (errorData.error === 'Insufficient credits') {
+        return new Response('Insufficient credits', { status: 402 });
+      }
+      return new Response('Failed to deduct credits', { status: 500 });
+    }
+
     const threadId = currentThreadId ?? (await openai.beta.threads.create({})).id;
 
-    // Add the user's message to the thread
     const createdMessage = await openai.beta.threads.messages.create(threadId, {
       role: 'user',
       content: message,
     });
 
-    // Use AssistantResponse to handle the streaming interaction
+
     return AssistantResponse(
       {
         threadId: threadId,
         messageId: createdMessage.id,
       },
       async ({ forwardStream }) => {
-        // Create the run and begin streaming
         const runStream = openai.beta.threads.runs.stream(threadId, {
           assistant_id: ASSISTANT_ID,
         });
 
-        // This part is key: we're intercepting the stream to process text
-        // before forwarding it to the client.
+
         await forwardStream(
           runStream.on('textCreated', () => {
-              // This event is fired when the assistant starts generating text.
+
               console.log('Assistant has started generating text...');
-              // eslint-disable-next-line
+
           }).on('textDelta', (delta, snapshot) => {
-              // This event gives us the small 'delta' of new text.
-              // We could apply cleaning here, but cleaning the full text is more reliable.
           }).on('textDone', (text) => {
-              // This event fires when a complete text block is available.
-              // We clean the final text here before it's fully processed.
+
               text.value = removeSourceAnnotations(text.value);
               console.log('Cleaned final text block.');
           })
-          // We can also handle other events like tool calls if needed
           .on('toolCallCreated', (toolCall) => {
               console.log(`Tool call created: ${toolCall.type}`);
           })
