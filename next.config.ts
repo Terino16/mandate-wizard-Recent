@@ -1,15 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-auth"],
+  serverExternalPackages: ["better-auth", "@prisma/client"],
   typescript: {
     ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: false,
-  },
-  experimental: {
-    serverComponentsExternalPackages: ["@prisma/client"],
   },
 };
 
