@@ -4,7 +4,7 @@ import prisma from "./db";
 
 
 export const auth = betterAuth({
-    baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    baseURL: process.env.BETTER_AUTH_URL || 'https://mandate-wizard-recent.vercel.app',
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
