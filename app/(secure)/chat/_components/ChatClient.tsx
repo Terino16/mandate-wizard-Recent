@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAssistant } from "@ai-sdk/react";
+import { useAssistant } from "ai/react";
 import { toast } from "sonner";
 import { Greeting } from "./Greeting";
 import { ChatMessages } from "./ChatMessages";
