@@ -26,6 +26,8 @@ const getCurrentDate = () => {
     timeZoneName: "short",
   };
   return now.toLocaleDateString("en-US", options);
+
+  // return now.toLocaleDateString("en-US", options);
 };
 
 export function ChatClient({ credits, onCreditsUpdate }: { credits: number | undefined; onCreditsUpdate?: (newCredits: number) => void }) {
